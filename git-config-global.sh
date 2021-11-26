@@ -15,6 +15,8 @@ git config --global core.ignorecase false
 git config --global core.quotepath false
 # Enable long path
 git config --global core.longpaths true
+# Rebase when pull
+git config --global pull.rebase true
 # Set date format
 git config --global log.date format:'%Y-%m-%d %H:%M:%S'
 git config --global blame.date format:'%Y-%m-%d %H:%M:%S'
