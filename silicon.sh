@@ -6,4 +6,4 @@ FLAGS+=" --line-offset 0"
 FLAGS+=" --line-pad 0"
 FLAGS+=" --pad-horiz 0"
 FLAGS+=" --pad-vert 0"
-silicon $FLAGS $@
+silicon $FLAGS "$@"
