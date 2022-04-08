@@ -5,96 +5,95 @@ import io
 import os
 
 
-README = "README.txt"
-ENCODING = "UTF-8"
+class ck:
+    README = "README"
+    ENCODING = "UTF-8"
 
+    def __init__(self, path: str = ".", hash: str = "sha256") -> None:
+        self._hash = hash
+        self._data = list()
+        self._path = os.path.relpath(path)
+        self._size = hashlib.new(hash).digest_size << 1
+        self._name = os.path.join(self._path, self.README + '.' + hash)
 
-def hash(name: str) -> str:
-    ret = hashlib.sha256()
-    f = open(name, "rb")
-    data = f.read(io.DEFAULT_BUFFER_SIZE)
-    while data:
-        ret.update(data)
+    def hash(self, name: str) -> str:
+        ret = hashlib.new(self._hash)
+        f = open(name, "rb")
         data = f.read(io.DEFAULT_BUFFER_SIZE)
-    f.close()
-    return ret.hexdigest()
+        while data:
+            ret.update(data)
+            data = f.read(io.DEFAULT_BUFFER_SIZE)
+        f.close()
+        return ret.hexdigest()
 
-
-def scan(path: str = '.') -> list:
-    ret = list()
-    path = os.path.relpath(path)
-    names = os.listdir(path)
-    if README in names:
-        names.remove(README)
-    for name in names:
-        name = os.path.join(path, name)
-        if os.path.isfile(name):
-            ret.append(name)
-    return ret
-
-
-def read(path: str = '.') -> dict:
-    ret = dict()
-    name = os.path.join(path, README)
-    if not os.path.exists(name):
+    def scan(self) -> list:
+        ret = list()
+        names = os.listdir(self._path)
+        for name in names:
+            if self.README in name:
+                continue
+            name = os.path.join(self._path, name)
+            if os.path.isfile(name):
+                ret.append(name)
         return ret
-    with open(name, "r", encoding=ENCODING) as f:
-        text = f.read()
-    for line in text.split('\n'):
-        if len(line) < 66 or line[64] != ' ':
-            continue
-        hash = line[:64]
-        try:
-            int(hash, 16)
-        except:
-            continue
-        name = line[65:].strip()
-        if name[0] == "*":
-            name = name[1:]
-        ret[name] = hash
-    return ret
 
+    def read(self) -> dict:
+        ret = dict()
+        if not os.path.exists(self._name):
+            return ret
+        with open(self._name, "r", encoding=self.ENCODING) as f:
+            text = f.read()
+        for line in text.split('\n'):
+            if len(line) < self._size + 2 or line[self._size] != ' ':
+                continue
+            hash = line[: self._size]
+            try:
+                int(hash, 16)
+            except:
+                continue
+            name = line[self._size + 1 :].strip()
+            if name[0] == "*":
+                name = name[1:]
+            ret[name] = hash
+        return ret
 
-def check(path: str = '.') -> tuple:
-    ret = list()
-    isok = True
-    path = os.path.relpath(path)
-    info = read(path)
-    names = scan(path)
-    for i in range(len(names)):
-        name = names[i]
-        sha = hash(name)
-        names[i] = name = os.path.basename(name)
-        record = info.get(name)
-        if record:
-            if record != sha:
-                print("修改", os.path.join(path, name))
-                print("  旧", record)
-                print("  新", sha)
+    def check(self):
+        isok = True
+        info = self.read()
+        names = self.scan()
+        for i in range(len(names)):
+            name = names[i]
+            sha = self.hash(name)
+            name = os.path.basename(name)
+            record = info.get(name)
+            names[i] = name
+            if record:
+                if record != sha:
+                    print("修改", os.path.join(self._path, name))
+                    print("  旧", record)
+                    print("  新", sha)
+                    isok = False
+            else:
+                self._data.append((sha, name))
+                print(sha, os.path.join(self._path, name))
                 isok = False
-        else:
-            ret.append((sha, name))
-            print(sha, os.path.join(path, name))
-            isok = False
-    if isok:
-        print("OK")
-    for name in info.keys():
-        if name not in names:
-            print("缺失", os.path.join(path, name))
-    return tuple(ret)
+        if isok:
+            print("OK")
+        for name in info.keys():
+            if name not in names:
+                print("缺失", os.path.join(self._path, name))
+        return self
 
-
-def write(info: tuple, path: str = '.') -> None:
-    name = os.path.join(path, README)
-    f = open(name, "ab+")
-    for line in info:
-        text = "{} {}\n".format(*line)
-        f.write(text.encode(ENCODING))
-    f.close()
+    def write(self) -> None:
+        f = open(self._name, "ab+")
+        for line in self._data:
+            text = "{} {}\n".format(*line)
+            f.write(text.encode(self.ENCODING))
+        f.close()
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        write(check())
+        ck().check().write()
     for path in sys.argv[1:]:
-        write(check(path), path)
+        ck(path).check().write()
