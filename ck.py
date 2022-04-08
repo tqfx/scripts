@@ -12,11 +12,10 @@ ENCODING = "UTF-8"
 def hash(name: str) -> str:
     ret = hashlib.sha256()
     f = open(name, "rb")
-    while True:
-        data = f.read(io.DEFAULT_BUFFER_SIZE)
-        if not data:
-            break
+    data = f.read(io.DEFAULT_BUFFER_SIZE)
+    while data:
         ret.update(data)
+        data = f.read(io.DEFAULT_BUFFER_SIZE)
     f.close()
     return ret.hexdigest()
 
