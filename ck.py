@@ -66,21 +66,22 @@ def check(path: str = '.') -> tuple:
         name = names[i]
         sha = hash(name)
         names[i] = name = os.path.basename(name)
-        if info.get(name):
-            if info.get(name) != sha:
-                print("修改", name)
-                print("  旧", info.get(name))
+        record = info.get(name)
+        if record:
+            if record != sha:
+                print("修改", os.path.join(path, name))
+                print("  旧", record)
                 print("  新", sha)
                 isok = False
         else:
             ret.append((sha, name))
-            print(sha, name)
+            print(sha, os.path.join(path, name))
             isok = False
     if isok:
         print("OK")
     for name in info.keys():
         if name not in names:
-            print("缺失", name)
+            print("缺失", os.path.join(path, name))
     return tuple(ret)
 
 
