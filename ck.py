@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import hashlib
+import getopt
 import sys
 import io
 import os
@@ -93,7 +94,32 @@ class ck:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        ck().check().write()
-    for path in sys.argv[1:]:
-        ck(path).check().write()
+
+    def usage() -> None:
+        help = "{} [option] [dirs]\n".format(sys.argv[0])
+        help += "-l --list\t\t- 显示可用算法\n"
+        help += "-a --algorithm [hash]\t- 选择校验算法，默认 sha256\n"
+        help += "-h --help\t\t- 显示此帮助信息并退出"
+        print(help)
+
+    opt_algorithm = "sha256"
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "ha:l", ["help", "list", "algorithm="])
+    except getopt.GetoptError:
+        exit(usage())
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            exit(usage())
+        elif opt in ("-l", "--list"):
+            exit(print(*hashlib.algorithms_available, sep='\n'))
+        elif opt in ("-a", "--algorithm"):
+            try:
+                hashlib.new(arg)
+                opt_algorithm = arg
+            except Exception as e:
+                exit(print(e))
+
+    if len(args) == 0:
+        exit(ck(hash=opt_algorithm).check().write())
+    for arg in args:
+        ck(arg, hash=opt_algorithm).check().write()
