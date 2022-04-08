@@ -11,12 +11,13 @@ ENCODING = "UTF-8"
 
 def hash(name: str) -> str:
     ret = hashlib.sha256()
-    with open(name, "rb") as f:
-        while True:
-            data = f.read(io.DEFAULT_BUFFER_SIZE)
-            if not data:
-                break
-            ret.update(data)
+    f = open(name, "rb")
+    while True:
+        data = f.read(io.DEFAULT_BUFFER_SIZE)
+        if not data:
+            break
+        ret.update(data)
+    f.close()
     return ret.hexdigest()
 
 
@@ -55,31 +56,41 @@ def read(path: str = '.') -> dict:
     return ret
 
 
-def check(path: str = '.') -> str:
-    ret = str()
+def check(path: str = '.') -> tuple:
+    ret = list()
+    isok = True
     path = os.path.relpath(path)
     info = read(path)
-    for name in scan(path):
+    names = scan(path)
+    for i in range(len(names)):
+        name = names[i]
         sha = hash(name)
-        name = os.path.basename(name)
-        line = sha + ' ' + name + '\n'
+        names[i] = name = os.path.basename(name)
         if info.get(name):
             if info.get(name) != sha:
                 print("修改", name)
                 print("  旧", info.get(name))
                 print("  新", sha)
-            else:
-                print("OK", name)
+                isok = False
         else:
-            print(line, end='')
-            ret += line
-    return ret
+            ret.append((sha, name))
+            print(sha, name)
+            isok = False
+    if isok:
+        print("OK")
+    for name in info.keys():
+        if name not in names:
+            print("缺失", name)
+    return tuple(ret)
 
 
-def write(text: str, path: str = '.') -> None:
+def write(info: tuple, path: str = '.') -> None:
     name = os.path.join(path, README)
-    with open(name, "ab+") as f:
+    f = open(name, "ab+")
+    for line in info:
+        text = "{} {}\n".format(*line)
         f.write(text.encode(ENCODING))
+    f.close()
 
 
 if __name__ == "__main__":
