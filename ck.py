@@ -79,7 +79,7 @@ class ck:
                 print(sha, os.path.join(self._path, name))
                 isok = False
         if isok:
-            print("OK")
+            print("OK", self._path)
         for name in info.keys():
             if name not in names:
                 print("缺失", os.path.join(self._path, name))
@@ -90,6 +90,8 @@ class ck:
         for line in self._data:
             text = "{} {}\n".format(*line)
             f.write(text.encode(self.ENCODING))
+        if self._data:
+            print("写入", self._name)
         f.close()
 
 
@@ -122,4 +124,6 @@ if __name__ == "__main__":
     if len(args) == 0:
         exit(ck(hash=opt_algorithm).check().write())
     for arg in args:
+        if not os.path.isdir(arg):
+            continue
         ck(arg, hash=opt_algorithm).check().write()
