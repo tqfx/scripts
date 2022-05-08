@@ -102,7 +102,7 @@ def exe_rename(filenames: list) -> None:
             idx += 1
         renames.append(sizename)
     for i, filename in enumerate(filenames):
-        if filename != renames[i]:
+        if filename != renames[i] and not os.path.exists(renames[i]):
             if opt_rename:
                 os.rename(filename, renames[i])
             if opt_verbose:
