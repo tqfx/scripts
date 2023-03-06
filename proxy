@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+usage() { echo "USAGE: $0 [-x 4,5] [-h host] [-p port] ..." 1>&2; exit 1; }
+
+type=http
+host=127.0.0.1
+port=10809
+
+while getopts "x:h:p:" o; do
+    case "${o}" in
+        x)
+            if [ ${OPTARG} == 4 ] || [ ${OPTARG} == 5 ]; then
+                type=socks${OPTARG}
+            fi
+            ;;
+        h)
+            host=${OPTARG}
+            ;;
+        p)
+            port=${OPTARG}
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+http_proxy=$type://$host:$port https_proxy=$type://$host:$port exec "$@"
