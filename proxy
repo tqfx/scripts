@@ -26,4 +26,9 @@ while getopts "x:h:p:" o; do
 done
 shift $((OPTIND-1))
 
-http_proxy=$type://$host:$port https_proxy=$type://$host:$port exec "$@"
+ALL_PROXY=$type://$host:$port \
+HTTP_PROXY=$type://$host:$port \
+http_proxy=$type://$host:$port \
+HTTPS_PROXY=$type://$host:$port \
+https_proxy=$type://$host:$port \
+exec "$@"
