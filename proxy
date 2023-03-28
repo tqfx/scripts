@@ -4,7 +4,10 @@ type=http
 host=127.0.0.1
 port=10809
 
-usage() { echo "USAGE: $0 [-x 4,5] [-h host] [-p port] ..." 1>&2; exit 0; }
+usage()
+{
+    echo "USAGE: $0 [-x 4,5] [-h host] [-p port] ..." 1>&2; exit 0;
+}
 
 while getopts "x:h:p:" o; do
     case "${o}" in
@@ -26,9 +29,12 @@ while getopts "x:h:p:" o; do
 done
 shift $((OPTIND-1))
 
-ALL_PROXY=$type://$host:$port \
-HTTP_PROXY=$type://$host:$port \
-http_proxy=$type://$host:$port \
-HTTPS_PROXY=$type://$host:$port \
-https_proxy=$type://$host:$port \
+export ALL_PROXY=$type://$host:$port
+
+export HTTP_PROXY=$type://$host:$port
+export http_proxy=$type://$host:$port
+
+export HTTPS_PROXY=$type://$host:$port
+export https_proxy=$type://$host:$port
+
 exec "$@"
