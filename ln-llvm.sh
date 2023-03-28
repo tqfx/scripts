@@ -5,15 +5,16 @@ usage()
     echo "USAGE: $0 [OPTIONS]"
     echo "OPTIONS:"
     echo "  -v, --version [NUM]    clang version"
-    exit
+    echo "  -h, --help             display this help and exit"
+    exit 0
 }
-
-if [ $# == 0 ]; then
-    usage
-fi
 
 while [ $# -gt 0 ]; do
     case "$1" in
+        -h|--help)
+            shift
+            usage
+            ;;
         -v|--version)
             shift
             version="$1"
@@ -25,9 +26,19 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-if [ "$version" -gt 0 ] 2>/dev/null; then
+if [ -z $version ]; then
+    version=0
+    for ver in $(echo /usr/lib/llvm-*); do
+        ver=${ver/\/usr\/lib\/llvm-/}
+        if [ $ver -gt $version ]; then
+            version=$ver
+        fi
+    done
+fi
+
+if [ -d /usr/lib/llvm-$version ]; then
     for i in $(ls -B /usr/bin/*-$version); do
         name=$(basename ${i/-$version/})
-        sudo ln -vsb /usr/lib/llvm-$version/bin/$name /usr/bin/$name
+        sudo ln -vsf /usr/lib/llvm-$version/bin/$name /usr/bin/$name
     done
 fi
