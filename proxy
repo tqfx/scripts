@@ -30,6 +30,7 @@ done
 shift $((OPTIND-1))
 
 export ALL_PROXY=$type://$host:$port
+export all_proxy=$type://$host:$port
 
 export HTTP_PROXY=$type://$host:$port
 export http_proxy=$type://$host:$port
